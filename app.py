@@ -822,8 +822,6 @@ def render_auth():
                 ok,msg=create_user(username,display,role,pw1)
                 (st.success if ok else st.error)(msg)
 
-if __name__=="__main__":
-    main()
 def linked_report(snapshot):
     c=snapshot.get('config',{}); fs=snapshot.get('facilities',[]); m=snapshot.get('metricsSummary',{}); x=snapshot.get('xaiReport',{})
     budget=float(c.get('budget',0))*1350; cost=sum(float(f.get('cost',0)) for f in fs)*1350
@@ -875,6 +873,46 @@ def render_dashboard():
         st.session_state.dashboard_snapshot=value
         st.caption('보고서 반영 시각: '+str(value.get('updatedAt','미확인')))
     st.warning('3D 렌더링과 가정 기반 분석용입니다. 외부 생성형 AI·API 서버 기능은 미연결이며 관련 요청은 사용할 수 없습니다.')
+
+
+
+_basic_linked_report=linked_report
+
+def report_findings(snapshot):
+    from collections import Counter
+    c=snapshot.get('config',{});fs=snapshot.get('facilities',[]);findings=[]
+    cost=sum(float(f.get('cost',0)) for f in fs)*1350
+    budget=float(c.get('budget',0))*1350
+    if not c.get('budgetUnknown') and budget>0 and cost>budget:
+        findings.append(('최우선','예산 초과',f'시설비 추정액 {cost/10000:,.1f}만원이 예산 {budget/10000:,.1f}만원보다 {(cost-budget)/10000:,.1f}만원 높음','시설·운영 담당','필수 기능을 유지하면서 선택 시설의 규격·수량을 조정하고 실제 견적 및 누락 운영비를 확보','재배치 후 비용 재계산 및 견적 대조'))
+    counts=Counter(f.get('category') for f in fs)
+    for key,label in [('entrance','출입구'),('medical','의료지원'),('restroom','화장실')]:
+        if not counts[key]:findings.append(('우선 검토',label+' 시설 미배치','현재 배치 목록에서 해당 분류를 찾지 못함','설계·운영 담당','현장 제공 시설 존재 여부 확인 후 필요 시설과 접근 경로 반영','현장 도면과 운영계획 대조'))
+    for r in c.get('customElements',[]):
+        name=r.get('nameKo','');actual=sum(1 for f in fs if name and name in str(f.get('nameKo') or f.get('name','')))
+        if actual!=r.get('count'):findings.append(('확인 필요','요청 부스 수량 대조',f"{name}: 요청 {r.get('count')}개, 이름 포함 매칭 {actual}개 (자동 이름 매칭은 오탐 가능)",'시설 담당','시설 ID·이름·크기와 공간 제약을 대조','요청 목록과 배치 명세 수동 대조'))
+    return findings
+
+def linked_report(snapshot):
+    from collections import Counter
+    c=snapshot.get('config',{});fs=snapshot.get('facilities',[]);m=snapshot.get('metricsSummary',{})
+    findings=report_findings(snapshot)
+    text=_basic_linked_report(snapshot)
+    # Place decision summary and provenance before the details.
+    intro=['## 검토 요약 및 의사결정','- 결론: 현장 적용 승인 여부는 판정 보류. 현재 보고서는 설계안 검토용이며 실측·견적·운영계획 확인이 필요합니다.',f'- 현재 자동 대조에서 확인한 검토 항목: {len(findings)}건. 0건이어도 안전·적합성을 의미하지 않습니다.','- 예상 방문객 입력은 누적 방문객인지 동시 재실 인원인지 명시되지 않았습니다. 재실 인원·시간대별 입퇴장 자료를 확보하기 전 실제 혼잡 예측으로 사용하지 마세요.','','## 자료 출처·가정·검증 범위','- 사용자 입력: 행사명·목적·방문객·예산·장소 조건. 현장 실측 또는 독립 검증된 사실로 간주하지 않습니다.','- 모델 출력 (ASSUMPTION): 시설 좌표·단가·참고 정원·혼잡·대기 및 점수. 단가와 시뮬레이션은 실제 견적·관측 기록과 대조 전입니다.','- 미확인 (MISSING): 실측 부지 경계·통로 유효폭·경사·시설 처리량·실제 견적·운영 인력·교통 연계 용량. 값이 없다고 양호로 판정하지 않습니다.','- 참고자료: 사용자 제공 「AI 행사장 자동 설계·분석: 실제 자료 기반 지식 데이터베이스 구축 가이드」 2·5·7~12쪽과 「행사장 설계와 군중 안전 원문 검토 및 국내외 행사 분석」 2·6쪽의 자료 구분·검증 한계 원칙을 보고서 구조에 반영했습니다. 논문 원문 재검증이나 모델 추가 학습을 수행했다는 의미는 아닙니다.','- 참고자료의 법령·사례 수치나 타 행사 성능을 이 행사의 적용 기준·검증 성능으로 전용하지 않았습니다.','']
+    parts=text.split('\n',1);text=parts[0]+'\n\n'+'\n'.join(intro)+'\n'+(parts[1] if len(parts)>1 else '')
+    text+='\n\n## 8. 문제점·개선 조치·재검증 계획\n'
+    if findings:
+        for i,(priority,title,evidence,owner,action,verify) in enumerate(findings,1):
+            text+=f'\n### {i}. [{priority}] {title}\n- 근거: {evidence}\n- 제안 담당 역할 (미지정): {owner}\n- 개선 조치: {action}\n- 확인 방법: {verify}\n- 상태: 미확인·조치 전. 완료 기한과 실제 책임자는 운영자가 지정해야 합니다.\n'
+    else:text+='- 현재 자동 대조에서 추가 항목이 검출되지 않았습니다. 공간·동선·안전 전반을 검사한 결과는 아닙니다.\n'
+    text+='\n## 9. 시설 구성 및 비용 집중도\n'
+    counts=Counter(f.get('category','미분류') for f in fs)
+    for k,n in sorted(counts.items()):
+        total=sum(float(f.get('cost',0)) for f in fs if f.get('category','미분류')==k)*1350
+        text+=f'- {k}: {n}개 / 가정 기반 시설비 {total/10000:,.1f}만원\n'
+    text+='\n## 10. 운영 단계별 점검 계획 (실행안 초안)\n- 개최 전: 실측 경계와 시설 배치를 대조하고 출입·의료 접근·접근성 경로를 현장에서 확인합니다. 미해결 항목의 담당자와 완료 여부를 기록합니다.\n- 입장 피크: 구역별 입장·퇴장·재실 인원과 대기줄 위치를 관찰하고, 실제 운영계획에 따른 유입 조절·안내 절차를 확인합니다. 특정 밀도 한 값으로 안전 여부를 단정하지 않습니다.\n- 프로그램 전환: 인기 시설의 체류와 교차 흐름을 함께 관찰하고, 대기 공간이 통로를 침범하면 배치·운영 방식을 재검토합니다.\n- 종료 직후: 행사장 출구뿐 아니라 외부 역·정류장·주차장으로 이어지는 대기 공간과 이동 연결부도 확인합니다.\n- 행사 후: 예측과 실제 방문·대기·비용 차이를 같은 단위·시간 구간으로 비교하고, 근거 자료와 수정 이력을 다음 설계에 반영합니다.\n'
+    return text
 
 if __name__ == '__main__':
     main()
