@@ -1303,5 +1303,22 @@ def build_all_css(page):
     css += '<style>html body .stApp .st-key-clean_home{isolation:isolate!important}html body .stApp .st-key-clean_home:before{content:"";position:absolute;inset:0;z-index:-1;background:'+two+' center top/100% 100% no-repeat;opacity:0;animation:eventon-home-layer 20s steps(1,end) infinite}@keyframes eventon-home-layer{0%,49.999%{opacity:0}50%,100%{opacity:1}}html body .stApp .st-key-clean_home,html body .stApp .st-key-clean_home:hover{animation:none!important;background-image:'+one+'!important}</style>'
     return css
 
+
+_home_clean_markup_css = build_all_css
+def build_all_css(page):
+    css = _home_clean_markup_css(page)
+    if page != '홈':
+        return css
+    # Normalize concatenated legacy style fragments into one valid HTML style element.
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    css = re.sub(r'</?style[^>]*>', '', css, flags=re.I)
+    css += """
+    .real-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:20px!important;width:100%!important}
+    .real-grid>article{min-width:0!important;width:auto!important;margin:0!important;box-sizing:border-box!important}
+    .real-grid>article img{width:100%!important;max-width:100%!important;height:auto!important;object-fit:contain!important}
+    @media(max-width:700px){.real-grid{gap:10px!important;overflow-x:auto!important;grid-template-columns:repeat(4,minmax(190px,1fr))!important}}
+    """
+    return '<style>'+css+'</style>'
+
 if __name__ == '__main__':
     main()
