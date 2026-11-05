@@ -1370,6 +1370,71 @@ def render_dashboard():
     st.markdown('<style>.st-key-dashboard_home_return{position:fixed!important;top:10px!important;right:20px!important;z-index:9999!important;width:auto!important}.st-key-dashboard_home_return button{background:#277986!important;border:1px solid #ffffff99!important;border-radius:9px!important;min-height:40px!important;padding:8px 18px!important;box-shadow:0 2px 8px #0002!important}.st-key-dashboard_home_return button p{color:white!important;font-weight:700!important}</style>',unsafe_allow_html=True)
     _dashboard_with_home_link()
 
+def dashboard_report_draft(snapshot, selected):
+    c=snapshot.get('config') or {}; fs=snapshot.get('facilities') or []; m=snapshot.get('metricsSummary') or {}; x=snapshot.get('xaiReport') or {}
+    def val(v):
+        if v is None or v=='': return '자료 없음'
+        if isinstance(v,(dict,list)): return json.dumps(v,ensure_ascii=False)
+        return str(v)
+    def num(v):
+        try:
+            f=float(v)
+            return f if f==f and abs(f)!=float('inf') else None
+        except (ValueError,TypeError): return None
+    sections=[]
+    def section(title,groups): sections.append((title,groups))
+    section('핵심 요약 및 작성 기준', [('보고 목적 및 데이터 기준', [f"{c.get('eventName') or '행사'}의 현재 설계와 분석 결과를 정리한 검토 초안임.", '기준 시각: '+val(snapshot.get('updatedAt')), '입력값·계산값·시뮬레이션 예측값을 구분하며, 실제 행사 운영 실적을 의미하지 않음.']),('검토 범위와 한계',['시설 설치비 외 인건비·보험·전력·철거비가 확인되지 않은 경우 총운영비로 판단하지 않음.','안전 분석은 설계 참고용이며 법적 적합성 검증이나 전문 안전관리자의 검토를 대체하지 않음.'])])
+    if '행사 기획 종합' in selected:
+        section('행사 기획 종합 분석',[('행사 개요',[ '행사명: '+val(c.get('eventName')),'개최 목적: '+val(c.get('purpose')),'행사 유형: '+val(c.get('eventTypes') or c.get('eventType')),'장소·환경: '+val(c.get('location'))+' / '+val(c.get('venueEnvironment') or c.get('venueType')),'예상 방문객(입력값): '+val(c.get('expectedAttendance'))+'명','운영시간: '+val(c.get('startTime'))+' ~ '+val(c.get('endTime'))]),('시설 구성 및 기획 검토',[f'현재 배치 시설은 {len(fs)}개임. 시설별 접근성·운영 수용량을 실제 운영계획과 대조해야 함.','설계 목표: '+val(c.get('objective')),'우선 과제: 행사 목적과 시설 구성이 일치하는지 확인하고, 집중 수요 시설의 대기 공간과 운영 인력을 함께 검토할 필요가 있음.'])])
+    if '공간 설계' in selected:
+        groups=[('공간 현황',['행사장 면적(엔진 계산값): '+val(m.get('venueAreaSqm'))+'m²','보행·체류 가용 면적(엔진 계산값): '+val(m.get('usableAreaSqm'))+'m²','외곽 크기(입력값): '+val(c.get('venueWidth'))+' × '+val(c.get('venueDepth'))+'m','공간 형태: '+val(c.get('venueShape') or c.get('venueLayoutModel'))])]
+        details=[]
+        for f in fs:
+            d=f.get('dimensions') or {}; pos=f.get('position') or {}
+            details.append(val(f.get('nameKo') or f.get('name'))+' / '+val(f.get('category'))+' / 규격 '+val(d.get('width'))+'×'+val(d.get('depth'))+'m / 중심좌표 X '+val(pos.get('x'))+', Z '+val(pos.get('z'))+'m')
+        groups += [('시설 배치 명세',details or ['배치된 시설 자료 없음.']),('해석 및 개선 방향',['시설별 사각형 면적 합계는 겹침·통로·비정형 경계를 고려한 실제 점유 면적과 다름. 공간 활용률로 임의 해석하지 않음.','주요 동선과 부스 대기줄의 교차 여부, 무대 주변 체류 공간과 출입구 접근 경로를 도면에서 확인해야 함.'])]
+        section('행사장 공간 설계 분석',groups)
+    if '방문객·혼잡도' in selected:
+        section('방문객 및 혼잡도 분석',[('시뮬레이션 결과',['모의 피크 밀도: '+val(m.get('peakDensity'))+'명/m²','모의 평균 대기시간: '+val(m.get('avgWaitMinutes'))+'분','모의 평균 보행거리: '+val(m.get('avgWalkDistance'))+'m','모델 참고 수용량: '+val(m.get('referenceCapacity'))+'명']),('원인 검토 및 개선 방향',['평균값만으로 시간대별·구역별 집중을 판단할 수 없음. 시설별 수요 및 시간대별 입퇴장 자료와 함께 검토해야 함.','주요 시설의 대기열을 주 통로에서 분리하고 입퇴장 시간 분산 및 안내 인력 운영을 검토할 필요가 있음.','시간대별 방문객 분포와 히트맵은 현재 전달 데이터에서 검증 가능한 원자료가 없으면 자동 산출하지 않음.'])])
+    if '예산·운영' in selected:
+        budget=num(c.get('budget')); costs=[num(f.get('cost')) for f in fs];total=sum(v for v in costs if v is not None);complete=all(v is not None for v in costs) and bool(fs)
+        values=['통화 기준: 원본 모델 USD × 고정 환산 1,350원. 실시간 환율이나 확정 견적이 아님.','입력 예산: '+('미정' if c.get('budgetUnknown') or budget is None else f'{budget*1350:,.0f}원'),'시설 설치비 합계(모델 추정): '+(f'{total*1350:,.0f}원' if complete else '일부 비용 누락으로 합계 확정 불가')]
+        if complete and budget is not None and budget>0 and not c.get('budgetUnknown'):values+= [f'시설비 기준 예산 사용률(계산값): {total/budget*100:.1f}%', '검토 결과: '+('시설비 추정액만으로 입력 예산을 초과하므로 수량·규격 또는 예산 조정이 필요함.' if total>budget else '시설비 추정액은 입력 예산 이내이나, 누락 운영비를 포함한 총사업비 검토가 필요함.')]
+        section('예산 및 운영 계획 분석',[('예산 현황',values),('운영 자원 및 개선 방향',['인건비·경비·보험·전력·운송·철거·예비비의 실제 견적과 포함 범위를 확인해야 함.','시설별 실제 단가와 운영시간, 창구 수, 교대 인력 자료가 없으므로 운영비·필요 인원을 임의 생성하지 않음.'])])
+    if '안전·접근성' in selected:
+        counts={k:sum(1 for f in fs if f.get('category')==k) for k in ['entrance','medical','restroom']}
+        section('안전 및 접근성 검토',[('시설 현황',[f"출입구 {counts['entrance']}개 / 의료시설 {counts['medical']}개 / 화장실 {counts['restroom']}개(현재 배치 목록 기준).",'접근성 설정(입력값): '+val(c.get('accessibility'))]),('취약 요소 및 개선 방향',['현재 목록에 없는 시설은 현장 기존 시설 제공 여부를 확인하고 필요시 추가 배치해야 함.','시설 접근성 설정만으로 실제 휠체어 통행, 경사도, 대피 가능성이 검증되지 않음. 현장 도면과 운영계획으로 검토해야 함.','비상 진입·대피 경로와 병목 구간을 대조하고 장애인·유모차 동반자의 연속 이동 경로를 확인해야 함.'])])
+    rationales=x.get('placementRationales') or []
+    section('종합 평가 및 후속 조치',[('설계 엔진이 전달한 설명',[val(x.get('executiveSummary'))]+[val(v) for v in rationales]),('후속 검토 계획',['공간 담당: 시설 간섭·동선·대기 공간을 도면과 대조할 것.','운영 담당: 수요·인력·장비 운영계획과 누락 비용을 확인할 것.','안전 담당: 현장 접근·의료 진입·대피 경로를 별도 검토할 것.','각 조치의 담당자와 완료 기한은 운영 조직에서 지정 필요함.'])])
+    section('자료 누락 및 분석 가정',[('현재 미확보 항목',['실제 3D 조감도 이미지, 시간대별 혼잡 히트맵, 이전 설계와 현재 설계의 일치 기준이 검증된 비교 자료는 별도 연동 필요함.','자료가 없는 시각 자료와 최적화 개선율은 생성하지 않음.']),('출처 및 검토 상태',['현재 대시보드의 마지막 동기화 데이터 사용.','외부 법령·문헌의 최신성과 적용 여부는 본 문서에서 검증하지 않으며, 확인되지 않은 법적 충족 판정은 제공하지 않음.'])])
+    lines=['# '+(c.get('eventName') or '행사')+' 설계·운영 검토 보고서','', '작성 상태: 검토용 초안','기준 시각: '+val(snapshot.get('updatedAt')),'','## 목차']
+    lines += [f'{i}. {title}  ' for i,(title,_) in enumerate(sections,1)]
+    for i,(title,groups) in enumerate(sections,1):
+        lines += ['',f'## {i}. {title}']
+        for j,(subtitle,items) in enumerate(groups):
+            lines += ['',f'### {"가나다라마바사아자차카타파하"[j]}. {subtitle}']
+            lines += [f'{k}) {item}  ' for k,item in enumerate(items,1)]
+    return '\n'.join(lines)
+
+
+def render_report():
+    st.title('설계·운영 보고서')
+    snapshot=st.session_state.get('dashboard_snapshot')
+    if not snapshot or not isinstance(snapshot.get('config'),dict):
+        st.info('동기화된 설계 자료가 없습니다. 대시보드에서 설계를 생성한 뒤 ‘현재 결과 보고서 동기화’를 눌러주세요. 보고서 화면에서는 행사 정보를 다시 입력하지 않습니다.')
+        if st.button('대시보드로 이동',key='report_go_dashboard'):go('대시보드');st.rerun()
+        return
+    st.caption('기준 시각: '+str(snapshot.get('updatedAt','미확인'))+' · 대시보드 마지막 동기화 데이터 사용. 설계 변경 후 다시 동기화하세요.')
+    names=['행사 기획 종합','공간 설계','방문객·혼잡도','예산·운영','안전·접근성']
+    kind=st.selectbox('보고서 유형',['통합 종합']+names,key='synced_report_kind')
+    text=dashboard_report_draft(snapshot,names if kind=='통합 종합' else [kind])
+    st.markdown(text)
+    st.download_button('보고서 초안 다운로드 (Markdown)',text.encode('utf-8'),file_name='Event_ON_report_draft.md',mime='text/markdown')
+    import html as report_html
+    html_text='<!doctype html><html lang="ko"><meta charset="utf-8"><title>행사 보고서 초안</title><style>body{max-width:900px;margin:48px auto;font:16px/1.9 sans-serif;color:#17343b;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@media print{body{margin:0}pre{white-space:pre-wrap}}</style><body><pre>'+report_html.escape(text)+'</pre></body></html>'
+    st.download_button('HTML 다운로드',html_text.encode('utf-8'),file_name='Event_ON_report_draft.html',mime='text/html')
+    try:st.download_button('PDF 다운로드',create_pdf(text,'설계·운영 검토 보고서'),file_name='Event_ON_report_draft.pdf',mime='application/pdf')
+    except Exception as exc:st.warning('PDF 생성 실패: '+str(exc)+' · Markdown 또는 HTML을 이용하세요.')
+
 if __name__ == '__main__':
     main()
-
