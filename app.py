@@ -1336,13 +1336,5 @@ def build_all_css(page):
         css += '<style>html body .stApp .st-key-clean_nav{background:#277986!important;border-radius:12px!important;padding:10px 16px!important}html body .stApp .st-key-clean_nav button{background:transparent!important;border:1px solid #ffffff55!important;border-radius:8px!important}html body .stApp .st-key-clean_nav button p{color:#fff!important;font-weight:700!important}html body .stApp [data-testid="stMain"] iframe{height:900px!important;min-height:900px!important;max-height:none!important}</style>'
     return css
 
-
-_all_inputs_css = build_all_css
-def build_all_css(page):
-    css = _all_inputs_css(page)
-    if page == '대시보드':
-        css += '<style>html body .stApp [data-testid="stMain"] iframe{height:auto!important;min-height:900px!important;max-height:none!important}html body .stApp [data-testid="stMain"]{overflow-y:auto!important;height:100dvh!important}html body .stApp .block-container,html body .stApp [data-testid="stMainBlockContainer"],html body .stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:auto!important;max-height:none!important;overflow:visible!important}</style>'
-    return css
-
 if __name__ == '__main__':
     main()
