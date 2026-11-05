@@ -1501,5 +1501,12 @@ def build_all_css(page):
     css += '<style>@media(min-width:701px){[data-testid="stDialog"] [role="dialog"]{position:fixed!important;left:auto!important;right:28px!important;top:88px!important;bottom:auto!important;margin:0!important;transform:none!important;width:460px!important;max-width:calc(100vw - 56px)!important;max-height:calc(100dvh - 112px)!important;overflow-y:auto!important}}</style>'
     return css
 
+
+_auth_drawer_css = build_all_css
+def build_all_css(page):
+    css = _auth_drawer_css(page)
+    css += '<style>[data-testid="stDialog"] div[data-baseweb="modal"]{justify-content:flex-end!important;align-items:stretch!important;padding:0!important}[data-testid="stDialog"] [data-baseweb="modal"]>div{margin-left:auto!important;margin-right:0!important}[data-testid="stDialog"] [role="dialog"],div[data-baseweb="modal"] [role="dialog"]{position:fixed!important;inset:0 0 0 auto!important;left:auto!important;right:0!important;top:0!important;bottom:0!important;margin:0!important;transform:none!important;width:min(480px,100vw)!important;min-height:100dvh!important;height:100dvh!important;max-height:100dvh!important;max-width:100vw!important;border-radius:0!important;padding:64px 24px 24px!important;box-sizing:border-box!important;overflow-y:auto!important;box-shadow:-14px 0 48px #193e4330!important}[data-testid="stDialog"] [data-testid="stDialogContainer"]{height:auto!important;max-height:none!important;overflow:visible!important}</style>'
+    return css
+
 if __name__ == '__main__':
     main()
