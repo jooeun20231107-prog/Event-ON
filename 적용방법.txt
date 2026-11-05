@@ -1,1 +1,1 @@
-app.py와 dashboard.b64를 교체하세요. home_assets.json은 첨부 사진으로 바꾼 현재 파일을 유지하세요. event_on.db는 삭제하지 마세요. 네 영역을 PC 2열/모바일 1열로 표시하며 마지막 기존 설계 생성 버튼을 유지합니다.
+app.py와 dashboard.b64를 함께 교체하세요. 현재 home_assets.json과 event_on.db는 그대로 유지하세요. 새 입력 화면은 네 영역을 세로로 이어 표시하며 마지막 실행 버튼으로 기존 3D 생성 함수를 호출합니다.
