@@ -286,25 +286,14 @@ except Exception:
 
 # -------------------- Pages --------------------
 def render_home():
-    slide=st.session_state.get('clean_home_slide',0)%2
-    image=CLEAN_SLIDE_ONE if slide==0 else CLEAN_SLIDE_TWO
-    if slide==0:
-        title='좋은 행사의 시작,<br>명확한 설계에서.'
-        desc='행사 기획부터 공간 배치까지, Event ON.'
-    else:
-        title='공간을 설계하고,<br>운영을 준비하세요.'
-        desc='행사 조건 입력 · 3D 공간 배치 · 운영 분석 · 설계 연동 보고서'
+    # Home hero changes its background image on hover through CSS only.
+    # No click navigation controls are used for the image carousel.
     with st.container(key='clean_home'):
-        st.markdown('<div class="clean-copy"><span>EVENT PLANNING WORKSPACE</span><h1>'+title+'</h1><p>'+desc+'</p></div>',unsafe_allow_html=True)
+        st.markdown('<div class="clean-copy"><span>EVENT PLANNING WORKSPACE</span><h1>좋은 행사의 시작,<br>명확한 설계에서.</h1><p>행사 기획부터 공간 배치까지, Event ON.</p></div>',unsafe_allow_html=True)
         with st.container(key='clean_start'):
-            if st.button('설계 시작하기　→',type='primary',key='clean_start_btn'):go('대시보드');st.rerun()
-        with st.container(key='clean_controls'):
-            a,b,c=st.columns([1,1,1])
-            if a.button('←',key='clean_prev',use_container_width=True):st.session_state.clean_home_slide=1-slide;st.rerun()
-            b.markdown('<div class="clean-count">'+str(slide+1)+' / 2</div>',unsafe_allow_html=True)
-            if c.button('→',key='clean_next',use_container_width=True):st.session_state.clean_home_slide=1-slide;st.rerun()
+            if st.button('설계 시작하기　→',type='primary',key='clean_start_btn'):
+                go('대시보드');st.rerun()
     st.markdown(REAL_FEATURES_HTML,unsafe_allow_html=True)
-
 
 
 
@@ -1088,6 +1077,10 @@ CLEAN_HOME_CSS = """<style>
 /* Keep the home layout at normal scale; enlarge only the background photo. */
 .stApp{background:#f3f7f6!important}
 .st-key-clean_home{position:relative!important;inset:auto!important;width:100%!important;height:clamp(520px,64vh,680px)!important;min-height:520px!important;max-height:680px!important;margin:0!important;overflow:hidden!important;z-index:1!important;box-sizing:border-box!important;background-image:linear-gradient(90deg,rgba(7,19,30,.68),rgba(7,19,30,.18)),url(data:image/jpeg;base64,SLIDE_IMAGE)!important;background-position:center,center 55%!important;background-size:cover,112% auto!important;background-repeat:no-repeat,no-repeat!important}
+.st-key-clean_home::after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;background-image:linear-gradient(90deg,rgba(7,19,30,.68),rgba(7,19,30,.18)),url(data:image/jpeg;base64,HOVER_IMAGE)!important;background-position:center,center 55%!important;background-size:cover,112% auto!important;background-repeat:no-repeat,no-repeat!important;opacity:0!important;transition:opacity .45s ease-in-out!important}
+.st-key-clean_home:hover::after{opacity:1!important}
+.st-key-clean_home .clean-copy{z-index:3!important}
+.st-key-clean_start{z-index:5!important}
 .clean-copy{position:absolute!important;left:5vw!important;right:auto!important;top:clamp(88px,12vh,125px)!important;width:min(72%,850px)!important;max-width:calc(100% - 10vw)!important;box-sizing:border-box!important;color:white!important}
 .clean-copy>span{font-size:10px!important;letter-spacing:2px!important;font-weight:650!important;color:#e1e9f1!important}
 .clean-copy h1{font-size:clamp(32px,3.2vw,52px)!important;line-height:1.18!important;font-weight:800!important;letter-spacing:-1px!important;color:white!important;margin:14px 0!important;padding:0!important;max-width:100%!important;overflow-wrap:normal!important;word-break:keep-all!important}
@@ -1095,7 +1088,7 @@ CLEAN_HOME_CSS = """<style>
 .st-key-clean_start{position:absolute!important;left:5vw!important;right:auto!important;top:auto!important;bottom:105px!important;width:auto!important;z-index:5!important}
 .st-key-clean_start button{border-radius:3px!important;background:#278aca!important;border:0!important;min-height:44px!important;padding:0 24px!important;box-shadow:none!important}
 .st-key-clean_start button p{font-size:12px!important;color:white!important}
-.st-key-clean_controls{position:absolute!important;left:calc(50% - 95px)!important;bottom:16px!important;width:190px!important;z-index:5!important}
+.st-key-clean_controls{display:none!important}
 .st-key-clean_controls button{background:rgba(255,255,255,.12)!important;border:1px solid #ffffff70!important;border-radius:50%!important;min-height:36px!important;width:36px!important;box-shadow:none!important}
 .st-key-clean_controls button p{color:white!important}.clean-count{text-align:center;line-height:36px;font-size:11px;color:white;letter-spacing:2px}
 @media(max-width:900px){.clean-copy{left:5vw!important;top:100px!important;width:88%!important;max-width:88%!important}.clean-copy h1{font-size:clamp(30px,4.5vw,46px)!important}.st-key-clean_start{left:5vw!important;bottom:90px!important}.st-key-clean_home{background-size:cover,120% auto!important}}
@@ -1147,8 +1140,7 @@ FINAL_DASH_CSS = """<style>
 def build_all_css(page):
     parts=[CLEAN_GLOBAL_CSS,REQUEST_LAYOUT_CSS,EIGHT_CSS,NO_UPWARD_BOUNCE_CSS]
     if page=='홈':
-        slide=st.session_state.get('clean_home_slide',0)%2
-        parts.append(CLEAN_HOME_CSS.replace('SLIDE_IMAGE',CLEAN_SLIDE_ONE if slide==0 else CLEAN_SLIDE_TWO))
+        parts.append(CLEAN_HOME_CSS.replace('SLIDE_IMAGE',CLEAN_SLIDE_ONE).replace('HOVER_IMAGE',CLEAN_SLIDE_TWO))
     parts.append(FINAL_BASE_CSS)
     if page=='홈':parts.append(FINAL_HOME_CSS)
     elif page=='대시보드':parts.append(FINAL_DASH_CSS)
