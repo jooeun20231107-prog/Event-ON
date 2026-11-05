@@ -794,9 +794,10 @@ def main():
     elif page=="로그인": render_auth()
     else: render_home()
 
-def render_auth():
-    st.markdown('<div class="eyebrow">YOUR ACCOUNT</div>',unsafe_allow_html=True)
-    st.title("로그인 / 회원가입")
+@st.dialog("Event ON · 계정", width="small")
+def _render_auth_modal():
+    st.markdown("### 반가워요, Event ON입니다")
+    st.caption("로그인하고 행사 설계와 보고서를 한곳에서 관리하세요.")
     login_tab,signup_tab=st.tabs(["로그인","회원가입"])
     with login_tab:
         with st.form("login_form"):
@@ -826,6 +827,11 @@ def render_auth():
             else:
                 ok,msg=create_user(username,display,role,pw1)
                 (st.success if ok else st.error)(msg)
+
+def render_auth():
+    render_home()
+    _render_auth_modal()
+
 
 def linked_report(snapshot):
     c=snapshot.get('config',{}); fs=snapshot.get('facilities',[]); m=snapshot.get('metricsSummary',{}); x=snapshot.get('xaiReport',{})
@@ -1039,6 +1045,8 @@ def render_report():
     with st.expander('기존 규칙형 기준 자료'):st.markdown(linked_report(snapshot))
 
 st.markdown('\n<style>\n[data-testid="stSidebar"]{background:#15253e!important;border-right:1px solid #263b59!important}\n[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p{color:#c3cfe0!important}\n[data-testid="stSidebar"] .brand-link{color:#ffffff!important;padding:12px 0 8px;font-size:30px;letter-spacing:-1.3px}\n[data-testid="stSidebar"] .brand-link span{color:#8eb5ff!important}\n[data-testid="stSidebar"] .brand-sub{color:#a9bbd4!important;font-size:10px;letter-spacing:1.7px}\n[data-testid="stSidebar"] .sidebar-label{color:#93aac9!important;letter-spacing:1.7px;font-size:10px;margin-top:28px;margin-bottom:10px}\n[data-testid="stSidebar"] div.stButton>button{background:#1d314e!important;border:1px solid #2d4464!important;color:#e1e9f7!important;border-radius:10px;min-height:46px;box-shadow:none!important;margin:3px 0}\n[data-testid="stSidebar"] div.stButton>button :is(p,span,div){color:#e1e9f7!important}\n[data-testid="stSidebar"] div.stButton>button:hover{background:#2b4466!important;border-color:#759bcb!important}\n[data-testid="stSidebar"] div.stButton>button[kind="primary"]{background:#dce9ff!important;border-color:#dce9ff!important;box-shadow:inset 4px 0 #477de1!important}\n[data-testid="stSidebar"] div.stButton>button[kind="primary"] :is(p,span,div){color:#173962!important}\n[data-testid="stSidebar"] .sidebar-user{background:#203650;border-color:#354d6b}\n[data-testid="stSidebar"] .sidebar-user-name{color:#fff!important}\n.hero{background:#edf3fb;border:1px solid #dce5f1;border-left:5px solid #4379d8;border-radius:20px;padding:clamp(24px,4vw,48px);box-shadow:none}\n.hero h1{font-size:clamp(30px,4vw,48px);letter-spacing:-1.8px;line-height:1.25;margin:18px 0;color:#152d4c}\n.hero p{font-size:15px;line-height:1.9;color:#536780}\n.eyebrow{font-size:11px;letter-spacing:1.8px;color:#3766ac}\n.home-flow{margin-top:28px;padding-top:18px;border-top:1px solid #d3dfee;color:#46648b;font-size:12px;line-height:2;overflow-wrap:anywhere}\n.feature-card{box-sizing:border-box;min-height:278px;padding:28px;border:1px solid #dce5f1;border-radius:18px;background:#fff;box-shadow:0 8px 24px #17365108;display:flex;flex-direction:column}\n.feature-icon{border-radius:12px;background:#edf3fb;color:#3767ad;width:44px;height:44px;margin-bottom:16px}\n.card-kicker{font-size:10px;letter-spacing:1.5px;color:#647e9e;margin-bottom:8px;font-weight:700}\n.feature-card h3{font-size:23px;letter-spacing:-.7px;margin-bottom:12px}\n.feature-card p{font-size:14px;line-height:1.8;color:#61738a;margin:0}\n@media(max-width:640px){.feature-card{min-height:250px;padding:22px}.hero h1{letter-spacing:-1px}.home-flow{font-size:11px}}\n</style>\n', unsafe_allow_html=True)
+
+st.markdown('<style>\n/* Account dialog only: the embedded design workspace is untouched. */\n[data-testid="stDialog"] [role="dialog"]{width:calc(100% - 32px)!important;max-width:460px!important;border:1px solid #dce5f2!important;border-radius:22px!important;box-shadow:0 28px 90px #10244245!important;background:#fff!important;color:#172b4d!important;padding:8px!important}\n[data-testid="stDialog"]::backdrop,div[data-baseweb="modal"]::backdrop{background:rgba(18,32,53,.40)!important;backdrop-filter:blur(5px)}\ndiv[data-baseweb="modal"]{backdrop-filter:blur(5px);background-color:rgba(18,32,53,.34)!important}\n[data-testid="stDialog"] h3{font-size:23px!important;letter-spacing:-.7px;margin-bottom:4px!important;color:#172b4d!important}\n[data-testid="stDialog"] [data-testid="stForm"]{padding:16px!important;border:1px solid #e2e9f3!important;border-radius:14px!important;background:#f9fbfe!important}\n[data-testid="stDialog"] [data-baseweb="tab-list"]{gap:20px!important}\n[data-testid="stDialog"] [data-baseweb="tab-highlight"]{background:#386aca!important}\n[data-testid="stDialog"] [aria-selected="true"]{color:#2859b5!important;font-weight:750!important}\n[data-testid="stDialog"] [data-testid="stFormSubmitButton"] button{background:#315fae!important;border:1px solid #315fae!important;color:white!important;min-height:44px;border-radius:10px}\n[data-testid="stDialog"] [data-testid="stFormSubmitButton"] button p{color:white!important}\n[data-testid="stDialog"] input{background:#fff!important;color:#172b4d!important}\n[data-testid="stDialog"] label p{color:#405575!important;font-size:13px!important}\n[data-testid="stDialog"] [data-testid="stVerticalBlock"]{gap:12px}\n</style>',unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
