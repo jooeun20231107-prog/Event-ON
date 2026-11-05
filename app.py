@@ -1360,5 +1360,16 @@ def build_all_css(page):
         css += '<style>html body .stApp [data-testid="stMain"] iframe{height:calc(100dvh - 8px)!important;min-height:0!important;width:100%!important}html body .stApp [data-testid="stMainBlockContainer"],html body .stApp .block-container{padding:0!important;margin:0!important;width:100%!important;max-width:none!important}.st-key-clean_nav{display:none!important}</style>'
     return css
 
+
+_dashboard_with_home_link = render_dashboard
+def render_dashboard():
+    with st.container(key='dashboard_home_return'):
+        if st.button('← 홈으로', key='dashboard_home_return_button'):
+            go('홈')
+            st.rerun()
+    st.markdown('<style>.st-key-dashboard_home_return{position:fixed!important;top:10px!important;right:20px!important;z-index:9999!important;width:auto!important}.st-key-dashboard_home_return button{background:#277986!important;border:1px solid #ffffff99!important;border-radius:9px!important;min-height:40px!important;padding:8px 18px!important;box-shadow:0 2px 8px #0002!important}.st-key-dashboard_home_return button p{color:white!important;font-weight:700!important}</style>',unsafe_allow_html=True)
+    _dashboard_with_home_link()
+
 if __name__ == '__main__':
     main()
+
