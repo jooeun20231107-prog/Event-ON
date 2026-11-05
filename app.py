@@ -1440,5 +1440,51 @@ def render_report():
     try:st.download_button('PDF 다운로드',create_pdf(text,'설계·운영 검토 보고서'),file_name='Event_ON_report_draft.pdf',mime='application/pdf')
     except Exception as exc:st.warning('PDF 생성 실패: '+str(exc)+' · Markdown 또는 HTML을 이용하세요.')
 
+
+_report_before_prose = dashboard_report_draft
+def dashboard_report_draft(snapshot, selected):
+    raw = _report_before_prose(snapshot, selected)
+    # Preserve hierarchy, combine factual items into continuous narrative paragraphs.
+    out=[]; paragraph=[]
+    def flush():
+        if paragraph:
+            out.append('1) '+' '.join(paragraph)+'\n')
+            paragraph.clear()
+    for line in raw.splitlines():
+        match=re.match(r'^\d+\)\s*(.*)',line)
+        if match:
+            item=match.group(1).strip().replace('자료 없음','[입력 필요]')
+            if ':' in item and not item.endswith(('.', '함.', '임.')):
+                label, value=item.split(':',1)
+                item=label+'은(는) '+value.strip()+'로 기록되어 있음.'
+            elif not item.endswith(('.', '!', '?')): item+='.'
+            paragraph.append(item)
+        else:
+            flush();out.append(line)
+    flush()
+    c=snapshot.get('config') or {};m=snapshot.get('metricsSummary') or {}
+    def missing(v):return v is None or v==''
+    absent=[label for label,key in [('행사명','eventName'),('개최 목적','purpose'),('장소','location'),('담당자','manager'),('개최 일자','eventDate')] if missing(c.get(key))]
+    out += ['','## 9. 작성 원칙에 따른 추가 검토','', '### 가. 목표와 성과의 구분','',
+        '1) 예상 방문객 '+str(c.get('expectedAttendance','[입력 필요]'))+'명은 대시보드의 계획 입력값이며 실제 참석 실적이 아님. 목표값은 실제값 및 측정 근거와 대조하여 평가해야 함. 실참자 수, 만족도, 매출, 실제 집행액과 같은 사후 실적이 연결되지 않은 경우 달성 여부는 [입력 필요]로 남겨 둠.','',
+        '### 나. 계획의 실행 가능성과 후속 조치','',
+        '1) 승인 전에는 세부 일정, 홍보 계획, 인력별 역할, 예산 산출 근거, 비상 대응 및 협조 요청을 검토해야 함. 대시보드에 없는 일정이나 담당자를 임의 지정하지 않으며 미확인 항목은 [입력 필요]로 처리함. 개선 조치는 문제와 관측 근거, 원인 확인, 개선책, 담당자 및 기한이 연결되도록 작성해야 함. 담당자와 기한은 [입력 필요]임.','',
+        '### 다. 사후 보고와 증빙','',
+        '1) 사후 보고서는 목표 대비 실제 성과, 프로그램 운영 결과, 참가자 피드백, 계획 대비 예산 집행, 잘된 점과 개선 필요 사항을 증빙과 함께 평가해야 함. 현재 설계 데이터만으로는 실제 행사 성과를 확정할 수 없음. 참가자 집계, 설문 원자료, 영수증과 운영 기록이 확보된 뒤 사후 평가를 보완해야 함.','',
+        '### 라. 누락 정보 및 품질 점검','',
+        '1) 현재 기본 정보에서 확인되지 않은 항목은 '+('、'.join(absent) if absent else '별도로 표시된 항목')+'임. 목적의 명확성, 목표의 측정 가능성, 일정의 구체성, 예산 근거, 책임자, 리스크 대응, 성과 근거 및 증빙 준비 상태는 제출 전 담당자가 대조해야 함. 확인되지 않은 상태를 검토 완료로 표시하지 않음.','',
+        '### 마. 참고자료 적용 범위','',
+        '1) 제공된 계획서·결과보고서 양식, 작성 마스터 가이드, 작성 지시문 및 참고 원문 목록의 구성과 검토 원칙을 적용함. 참고 원문 목록은 참고자료 목록이며, 개별 외부 원문의 진위·최신성·적용 여부를 검증했다는 의미가 아님. 표와 점 목록 대신 문단형 서술로 작성함.']
+    # Renumber sections sequentially, avoiding duplicate 9 across selected variants.
+    count=0
+    for i,line in enumerate(out):
+        if re.match(r'^## \d+\.',line):
+            count+=1;out[i]=re.sub(r'^## \d+\.',f'## {count}.',line)
+    # Regenerate contents because new sections were added.
+    text='\n'.join(out)
+    titles=re.findall(r'^## (\d+\. .+)$',text,re.M)
+    text=re.sub(r'(## 목차\n).*?(?=\n## \d+\.)',lambda _: '## 목차\n'+'\n'.join(title+'  ' for title in titles)+'\n',text,flags=re.S)
+    return text
+
 if __name__ == '__main__':
     main()
