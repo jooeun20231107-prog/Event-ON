@@ -1320,5 +1320,13 @@ def build_all_css(page):
     """
     return '<style>'+css+'</style>'
 
+
+_home_large_start_css = build_all_css
+def build_all_css(page):
+    css = _home_large_start_css(page)
+    if page == '홈':
+        css += '<style>html body .stApp .st-key-clean_start button{min-width:230px!important;min-height:72px!important;padding:18px 32px!important;border-radius:15px!important}html body .stApp .st-key-clean_start button p{font-size:22px!important;font-weight:800!important;line-height:1.4!important}@media(max-width:640px){html body .stApp .st-key-clean_start button{min-width:200px!important;min-height:64px!important;padding:14px 26px!important}html body .stApp .st-key-clean_start button p{font-size:20px!important}}</style>'
+    return css
+
 if __name__ == '__main__':
     main()
