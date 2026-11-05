@@ -780,8 +780,56 @@ def _render_auth_modal():
                 (st.success if ok else st.error)(msg)
 
 def render_auth():
-    render_home()
-    _render_auth_modal()
+    # 홈 콘텐츠는 왼쪽에 유지하고, 로그인/회원가입은 오른쪽 세로 패널로 표시
+    left, right = st.columns([1.35, 0.85], gap="large", vertical_alignment="top")
+    with left:
+        render_home()
+    with right:
+        with st.container(border=True):
+            st.markdown(
+                '<div class="auth-panel-head"><div class="auth-eyebrow">WELCOME TO EVENT ON</div>'
+                '<h2>다시 만나서 반가워요</h2><p>로그인하고 행사 설계를 이어가세요.</p></div>',
+                unsafe_allow_html=True,
+            )
+            login_tab, signup_tab = st.tabs(["로그인", "회원가입"])
+            with login_tab:
+                with st.form("login_form_inline"):
+                    username = st.text_input("아이디", placeholder="아이디를 입력하세요")
+                    password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
+                    submitted = st.form_submit_button("로그인", type="primary", use_container_width=True)
+                if submitted:
+                    user = authenticate(username, password) if username.strip() and password else None
+                    if user:
+                        st.session_state.logged_in = True
+                        st.session_state.user_id = user["id"]
+                        st.session_state.username = user["username"]
+                        st.session_state.display_name = user["display_name"]
+                        st.session_state.role = user["role"]
+                        st.session_state.page = "홈"
+                        st.success("로그인했어요.")
+                        st.rerun()
+                    else:
+                        st.error("아이디 또는 비밀번호를 확인해 주세요.")
+            with signup_tab:
+                with st.form("signup_form_inline"):
+                    username = st.text_input("아이디 (3자 이상)", placeholder="사용할 아이디")
+                    display = st.text_input("표시 이름", placeholder="이름 또는 닉네임")
+                    role = st.selectbox("역할", ["기획자", "관리자", "팀원", "상사", "기타"])
+                    pw1 = st.text_input("비밀번호 (4자 이상)", type="password")
+                    pw2 = st.text_input("비밀번호 확인", type="password")
+                    submitted = st.form_submit_button("회원가입", type="primary", use_container_width=True)
+                if submitted:
+                    if not username.strip() or not display.strip() or not pw1:
+                        st.error("아이디, 표시 이름, 비밀번호를 입력해 주세요.")
+                    elif len(username.strip()) < 3:
+                        st.error("아이디는 3자 이상이어야 합니다.")
+                    elif len(pw1) < 4:
+                        st.error("비밀번호는 4자 이상이어야 합니다.")
+                    elif pw1 != pw2:
+                        st.error("비밀번호가 일치하지 않습니다.")
+                    else:
+                        ok, msg = create_user(username, display, role, pw1)
+                        (st.success if ok else st.error)(msg)
 
 
 def linked_report(snapshot):
@@ -1505,7 +1553,62 @@ def build_all_css(page):
 _auth_drawer_css = build_all_css
 def build_all_css(page):
     css = _auth_drawer_css(page)
-    css += '<style>[data-testid="stDialog"] div[data-baseweb="modal"]{justify-content:flex-end!important;align-items:stretch!important;padding:0!important}[data-testid="stDialog"] [data-baseweb="modal"]>div{margin-left:auto!important;margin-right:0!important}[data-testid="stDialog"] [role="dialog"],div[data-baseweb="modal"] [role="dialog"]{position:fixed!important;inset:0 0 0 auto!important;left:auto!important;right:0!important;top:0!important;bottom:0!important;margin:0!important;transform:none!important;width:min(480px,100vw)!important;min-height:100dvh!important;height:100dvh!important;max-height:100dvh!important;max-width:100vw!important;border-radius:0!important;padding:64px 24px 24px!important;box-sizing:border-box!important;overflow-y:auto!important;box-shadow:-14px 0 48px #193e4330!important}[data-testid="stDialog"] [data-testid="stDialogContainer"]{height:auto!important;max-height:none!important;overflow:visible!important}</style>'
+    # Event ON teal visual system: home login panel and settings page share the same palette.
+    css += '''
+<style>
+:root {
+  --eo-teal:#168b91; --eo-teal-dark:#106c73; --eo-teal-light:#e5f5f4;
+  --eo-bg:#f4f9f9; --eo-ink:#173f43; --eo-border:#d4e8e8;
+}
+.stApp { background:var(--eo-bg)!important; color:var(--eo-ink)!important; }
+[data-testid="stMain"] h1,[data-testid="stMain"] h2,[data-testid="stMain"] h3,
+[data-testid="stMain"] h4 { color:var(--eo-ink)!important; }
+[data-testid="stMain"] p,[data-testid="stMain"] label,
+[data-testid="stMain"] [data-testid="stMarkdownContainer"] { color:#42666a; }
+[data-testid="stMain"] button[kind="primary"],
+[data-testid="stFormSubmitButton"] button {
+  background:var(--eo-teal)!important; border-color:var(--eo-teal)!important;
+  color:#fff!important; border-radius:12px!important;
+}
+[data-testid="stMain"] button[kind="primary"]:hover,
+[data-testid="stFormSubmitButton"] button:hover {
+  background:var(--eo-teal-dark)!important; border-color:var(--eo-teal-dark)!important;
+}
+[data-testid="stMain"] button[kind="primary"] p,
+[data-testid="stFormSubmitButton"] button p { color:#fff!important; }
+[data-baseweb="tab-highlight"] { background:var(--eo-teal)!important; }
+[data-baseweb="tab"][aria-selected="true"] { color:var(--eo-teal-dark)!important; }
+[data-testid="stMain"] [data-testid="stForm"],
+[data-testid="stMain"] [data-testid="stExpander"],
+[data-testid="stMain"] [data-testid="stMetric"] {
+  border-color:var(--eo-border)!important; background:#fff!important; border-radius:16px;
+}
+[data-baseweb="input"]:focus-within,[data-baseweb="select"]:focus-within,
+[data-testid="stMain"] textarea:focus {
+  border-color:var(--eo-teal)!important; box-shadow:0 0 0 1px var(--eo-teal)!important;
+}
+input[type="radio"],input[type="checkbox"],input[type="range"] { accent-color:var(--eo-teal)!important; }
+[data-testid="stMain"] a { color:var(--eo-teal-dark)!important; }
+.auth-panel-head { padding:.35rem .15rem 1rem; }
+.auth-panel-head h2 { font-size:1.55rem; margin:.45rem 0; color:#173f43!important; }
+.auth-panel-head p { margin:0; color:#668184!important; font-size:.9rem; }
+.auth-eyebrow { color:var(--eo-teal)!important; font-size:.72rem; font-weight:850; letter-spacing:.13em; }
+[data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"]:has(.auth-panel-head) {
+  background:linear-gradient(180deg,#ffffff 0%,#f7fcfc 100%);
+  border:1px solid var(--eo-border); border-radius:22px; padding:1.15rem;
+  box-shadow:0 14px 36px rgba(20,105,111,.09);
+}
+[data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"]:has(.auth-panel-head) [data-testid="stForm"] {
+  padding:.85rem; border:0!important; background:transparent!important;
+}
+[data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"]:has(.auth-panel-head) input {
+  border-radius:10px;
+}
+@media(max-width:900px) {
+  [data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(.auth-panel-head) { gap:1rem; }
+}
+</style>
+'''
     return css
 
 if __name__ == '__main__':
