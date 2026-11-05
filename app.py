@@ -780,56 +780,53 @@ def _render_auth_modal():
                 (st.success if ok else st.error)(msg)
 
 def render_auth():
-    # 홈 콘텐츠는 왼쪽에 유지하고, 로그인/회원가입은 오른쪽 세로 패널로 표시
-    left, right = st.columns([1.35, 0.85], gap="large", vertical_alignment="top")
-    with left:
-        render_home()
-    with right:
-        with st.container(border=True):
-            st.markdown(
-                '<div class="auth-panel-head"><div class="auth-eyebrow">WELCOME TO EVENT ON</div>'
-                '<h2>다시 만나서 반가워요</h2><p>로그인하고 행사 설계를 이어가세요.</p></div>',
-                unsafe_allow_html=True,
-            )
-            login_tab, signup_tab = st.tabs(["로그인", "회원가입"])
-            with login_tab:
-                with st.form("login_form_inline"):
-                    username = st.text_input("아이디", placeholder="아이디를 입력하세요")
-                    password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
-                    submitted = st.form_submit_button("로그인", type="primary", use_container_width=True)
-                if submitted:
-                    user = authenticate(username, password) if username.strip() and password else None
-                    if user:
-                        st.session_state.logged_in = True
-                        st.session_state.user_id = user["id"]
-                        st.session_state.username = user["username"]
-                        st.session_state.display_name = user["display_name"]
-                        st.session_state.role = user["role"]
-                        st.session_state.page = "홈"
-                        st.success("로그인했어요.")
-                        st.rerun()
-                    else:
-                        st.error("아이디 또는 비밀번호를 확인해 주세요.")
-            with signup_tab:
-                with st.form("signup_form_inline"):
-                    username = st.text_input("아이디 (3자 이상)", placeholder="사용할 아이디")
-                    display = st.text_input("표시 이름", placeholder="이름 또는 닉네임")
-                    role = st.selectbox("역할", ["기획자", "관리자", "팀원", "상사", "기타"])
-                    pw1 = st.text_input("비밀번호 (4자 이상)", type="password")
-                    pw2 = st.text_input("비밀번호 확인", type="password")
-                    submitted = st.form_submit_button("회원가입", type="primary", use_container_width=True)
-                if submitted:
-                    if not username.strip() or not display.strip() or not pw1:
-                        st.error("아이디, 표시 이름, 비밀번호를 입력해 주세요.")
-                    elif len(username.strip()) < 3:
-                        st.error("아이디는 3자 이상이어야 합니다.")
-                    elif len(pw1) < 4:
-                        st.error("비밀번호는 4자 이상이어야 합니다.")
-                    elif pw1 != pw2:
-                        st.error("비밀번호가 일치하지 않습니다.")
-                    else:
-                        ok, msg = create_user(username, display, role, pw1)
-                        (st.success if ok else st.error)(msg)
+    # 홈 화면을 먼저 그대로 렌더링하고, 로그인 패널은 홈 위에 고정 오버레이로 띄웁니다.
+    render_home()
+    with st.container(key="auth_overlay"):
+        st.markdown(
+            '<div class="auth-panel-head"><div class="auth-eyebrow">WELCOME TO EVENT ON</div>'
+            '<h2>다시 만나서 반가워요</h2><p>로그인하고 행사 설계를 이어가세요.</p></div>',
+            unsafe_allow_html=True,
+        )
+        login_tab, signup_tab = st.tabs(["로그인", "회원가입"])
+        with login_tab:
+            with st.form("login_form_overlay"):
+                username = st.text_input("아이디", placeholder="아이디를 입력하세요")
+                password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
+                submitted = st.form_submit_button("로그인", type="primary", use_container_width=True)
+            if submitted:
+                user = authenticate(username, password) if username.strip() and password else None
+                if user:
+                    st.session_state.logged_in = True
+                    st.session_state.user_id = user["id"]
+                    st.session_state.username = user["username"]
+                    st.session_state.display_name = user["display_name"]
+                    st.session_state.role = user["role"]
+                    st.session_state.page = "홈"
+                    st.success("로그인했어요.")
+                    st.rerun()
+                else:
+                    st.error("아이디 또는 비밀번호를 확인해 주세요.")
+        with signup_tab:
+            with st.form("signup_form_overlay"):
+                username = st.text_input("아이디 (3자 이상)", placeholder="사용할 아이디")
+                display = st.text_input("표시 이름", placeholder="이름 또는 닉네임")
+                role = st.selectbox("역할", ["기획자", "관리자", "팀원", "상사", "기타"])
+                pw1 = st.text_input("비밀번호 (4자 이상)", type="password")
+                pw2 = st.text_input("비밀번호 확인", type="password")
+                submitted = st.form_submit_button("회원가입", type="primary", use_container_width=True)
+            if submitted:
+                if not username.strip() or not display.strip() or not pw1:
+                    st.error("아이디, 표시 이름, 비밀번호를 입력해 주세요.")
+                elif len(username.strip()) < 3:
+                    st.error("아이디는 3자 이상이어야 합니다.")
+                elif len(pw1) < 4:
+                    st.error("비밀번호는 4자 이상이어야 합니다.")
+                elif pw1 != pw2:
+                    st.error("비밀번호가 일치하지 않습니다.")
+                else:
+                    ok, msg = create_user(username, display, role, pw1)
+                    (st.success if ok else st.error)(msg)
 
 
 def linked_report(snapshot):
@@ -1607,6 +1604,34 @@ input[type="radio"],input[type="checkbox"],input[type="range"] { accent-color:va
 @media(max-width:900px) {
   [data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(.auth-panel-head) { gap:1rem; }
 }
+/* 로그인/회원가입은 홈 콘텐츠 위에 떠 있는 우측 패널 */
+.stApp .st-key-auth_overlay {
+  position:fixed!important; z-index:99999!important;
+  top:88px!important; right:28px!important; left:auto!important;
+  width: min(440px, calc(100vw - 32px))!important;
+  max-height: calc(100dvh - 108px)!important;
+  overflow-y:auto!important; overflow-x:hidden!important;
+  box-sizing:border-box!important;
+  padding:1.25rem!important;
+  background:rgba(255,255,255,.97)!important;
+  border:1px solid #b9e0e1!important; border-radius:22px!important;
+  box-shadow:0 22px 65px rgba(5,52,59,.28)!important;
+  backdrop-filter:blur(12px);
+}
+.stApp .st-key-auth_overlay [data-testid="stTabs"] { margin-top:.3rem!important; }
+.stApp .st-key-auth_overlay [data-testid="stForm"] { padding:.65rem 0!important; border:0!important; background:transparent!important; }
+.stApp .st-key-auth_overlay h2 { color:#173f43!important; }
+.stApp .st-key-auth_overlay p,.stApp .st-key-auth_overlay label { color:#42666a!important; }
+.stApp .st-key-auth_overlay button[kind="primary"] { background:#168b91!important; border-color:#168b91!important; }
+.stApp .st-key-auth_overlay button[kind="primary"] p { color:#fff!important; }
+@media(max-width:700px) {
+  .stApp .st-key-auth_overlay { top:78px!important; right:10px!important; width:calc(100vw - 20px)!important; max-height:calc(100dvh - 90px)!important; }
+}
+/* 홈 배경의 기존 흰색 문구 유지 */
+.stApp .st-key-clean_home .clean-copy,
+.stApp .st-key-clean_home .clean-copy h1,
+.stApp .st-key-clean_home .clean-copy p,
+.stApp .st-key-clean_home .clean-copy span { color:#fff!important; }
 </style>
 '''
     return css
