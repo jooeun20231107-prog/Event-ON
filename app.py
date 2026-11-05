@@ -1352,5 +1352,13 @@ def build_all_css(page):
         css += '<style>html body .stApp .st-key-clean_nav{display:none!important}html body .stApp [data-testid="stMainBlockContainer"],html body .stApp .block-container{padding:0!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important}html body .stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{gap:0!important}html body .stApp [data-testid="stMain"] iframe{width:100%!important;height:calc(100dvh - 8px)!important;min-height:500px!important;max-height:none!important;border:0!important;border-radius:0!important}html body .stApp [data-testid="stMain"]{padding:0!important;height:100dvh!important;overflow-y:auto!important}</style>'
     return css
 
+
+_quadrant_css = build_all_css
+def build_all_css(page):
+    css = _quadrant_css(page)
+    if page == '대시보드':
+        css += '<style>html body .stApp [data-testid="stMain"] iframe{height:calc(100dvh - 8px)!important;min-height:0!important;width:100%!important}html body .stApp [data-testid="stMainBlockContainer"],html body .stApp .block-container{padding:0!important;margin:0!important;width:100%!important;max-width:none!important}.st-key-clean_nav{display:none!important}</style>'
+    return css
+
 if __name__ == '__main__':
     main()

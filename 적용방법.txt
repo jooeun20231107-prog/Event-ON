@@ -1,1 +1,1 @@
-app.py와 dashboard.b64를 함께 교체하세요. 대시보드 상단 메뉴줄 제거, 화면 너비 전체 사용, 입력창 내부 세로 스크롤 적용. home_assets.json과 event_on.db는 그대로 유지하세요.
+app.py와 dashboard.b64를 모두 교체하세요. 입력 영역을 2x2 고정 배치했습니다. 1 왼쪽 위, 2 오른쪽 위, 3 왼쪽 아래, 4 오른쪽 아래입니다. 각 칸 내부를 따로 스크롤합니다. 실행 버튼은 맨 아래에 항상 표시됩니다. home_assets.json 및 event_on.db는 유지하세요.
