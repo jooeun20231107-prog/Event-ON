@@ -1,1 +1,1 @@
-dashboard.b64만 교체하세요. 타임라인을 기존 하단 위치보다 위로 옮겼습니다. 나머지 화면·입력·스크롤·선명도 설정은 유지합니다.
+app.py와 dashboard.b64를 함께 교체하세요. home_assets.json과 event_on.db는 유지하세요.

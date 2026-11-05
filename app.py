@@ -887,7 +887,11 @@ def report_settings_form():
 def render_settings():
     _previous_render_settings()
     st.divider()
-    st.subheader('대시보드 조작 설정')
+    with st.container(border=True, key="dedicated_dashboard_controls"):
+        render_dashboard_controls_settings()
+
+def render_dashboard_controls_settings():
+    st.subheader("대시보드 조작 설정")
     prefs=st.session_state.get('dashboard_controls',{'deviceMode':'laptop','dragMode':'rotate'})
     mode=st.radio('기기 모드',['노트북','태블릿·펜'],index=0 if prefs.get('deviceMode')=='laptop' else 1,horizontal=True,key='dashboard_device_setting')
     drag=st.radio('마우스 드래그 동작',['회전','이동'],index=0 if prefs.get('dragMode')=='rotate' else 1,horizontal=True,key='dashboard_drag_setting')
