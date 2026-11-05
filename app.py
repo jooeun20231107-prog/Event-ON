@@ -977,7 +977,7 @@ FINAL_HOME_CSS = """<style>
 .stApp{background:#f3f7f6!important}
 .stApp [data-testid="stMainBlockContainer"],.stApp .block-container{padding:46px 0 0!important}
 .stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{gap:0!important}
-.stApp .st-key-clean_home{position:relative!important;inset:auto!important;top:auto!important;width:100%!important;height:calc(100dvh - 46px)!important;min-height:420px!important;margin:0!important;overflow:hidden!important;z-index:1!important}
+.stApp .st-key-clean_home{position:relative!important;inset:auto!important;top:auto!important;width:100%!important;height:auto!important;min-height:420px!important;margin:0!important;overflow:hidden!important;z-index:1!important}
 .stApp .clean-copy{left:10vw!important;top:24%!important}
 .stApp .st-key-clean_start{left:10vw!important;top:61%!important;bottom:auto!important}
 .stApp .st-key-clean_controls{bottom:22px!important}
@@ -1027,12 +1027,12 @@ FINAL_DASH_CSS = """<style>
 }
 /* 대시보드: 브라우저 페이지 자체 스크롤을 없애고 작업영역을 뷰포트 안에 고정 */
 html:has(.st-key-clean_nav),body:has(.st-key-clean_nav),.stApp:has(.st-key-clean_nav),
-[data-testid="stAppViewContainer"]:has(.st-key-clean_nav){height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}
+[data-testid="stAppViewContainer"]:has(.st-key-clean_nav){height:auto!important;max-height:none!important;overflow:visible!important}
 .stApp:has(.st-key-clean_nav) [data-testid="stMain"],
 .stApp:has(.st-key-clean_nav) [data-testid="stMainBlockContainer"],
-.stApp:has(.st-key-clean_nav) .block-container{height:calc(100dvh - 46px)!important;max-height:calc(100dvh - 46px)!important;overflow:hidden!important;box-sizing:border-box!important}
-.stApp:has(.st-key-clean_nav) [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:100%!important;min-height:0!important;overflow:hidden!important}
-.stApp:has(.st-key-clean_nav) [data-testid="stMain"] iframe{max-height:calc(100dvh - 64px)!important}
+.stApp:has(.st-key-clean_nav) .block-container{height:auto!important;max-height:auto!important;overflow:hidden!important;box-sizing:border-box!important}
+.stApp:has(.st-key-clean_nav) [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:auto!important;min-height:0!important;overflow:visible!important}
+.stApp:has(.st-key-clean_nav) [data-testid="stMain"] iframe{max-height:none!important}
 </style>"""
 def build_all_css(page):
     parts=[CLEAN_GLOBAL_CSS,REQUEST_LAYOUT_CSS,EIGHT_CSS,NO_UPWARD_BOUNCE_CSS]
@@ -1243,6 +1243,12 @@ def build_all_css(page):
         css += '<style>.stApp .st-key-clean_home{position:relative!important;inset:auto!important;min-height:0!important;height:auto!important;aspect-ratio:16/9!important;background-size:100% 100%!important;background-position:center top!important}.stApp .st-key-clean_home:hover{background-image:linear-gradient(90deg,#07131e85,#07131e15),url(data:image/jpeg;base64,'+CLEAN_SLIDE_TWO+')!important}.st-key-clean_controls{display:none!important}.stApp .clean-copy{top:24%!important}.stApp .st-key-clean_start{top:65%!important}@media(max-width:640px){.clean-copy h1{font-size:clamp(18px,4.4vw,30px)!important}.clean-copy p{font-size:10px!important}.clean-copy>span{font-size:7px!important}.stApp .st-key-clean_start button{min-height:28px!important;padding:2px 10px!important}.stApp .st-key-clean_start button p{font-size:10px!important}}</style>'
     return css
 
+
+
+_scroll_build_all_css = build_all_css
+def build_all_css(page):
+    css = _scroll_build_all_css(page)
+    return css + '<style>\nhtml body .stApp:has(.st-key-clean_nav) [data-testid="stMain"]{height:100dvh!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important}\nhtml body .stApp:has(.st-key-clean_nav) [data-testid="stMainBlockContainer"],html body .stApp:has(.st-key-clean_nav) .block-container,html body .stApp:has(.st-key-clean_nav) [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:auto!important;max-height:none!important;overflow:visible!important}\nhtml body .stApp:has(.st-key-clean_nav) [data-testid="stMain"] iframe{height:auto;max-height:none!important;min-height:700px}\n</style>'
 
 if __name__ == '__main__':
     main()
