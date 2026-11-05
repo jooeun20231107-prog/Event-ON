@@ -286,19 +286,22 @@ except Exception:
 
 # -------------------- Pages --------------------
 def render_home():
-    st.markdown("""<div class="hero"><div class="eyebrow">AI EVENT PLANNING PLATFORM</div>
-    <h1>좋은 행사는<br>좋은 설계에서 시작됩니다.</h1>
-    <p>행사 기획부터 공간 운영까지, 필요한 작업을 한곳에서 관리하세요.
-    Event ON은 더 체계적인 행사 준비를 위한 스마트 워크스페이스입니다.</p></div>""", unsafe_allow_html=True)
-    st.markdown("## 무엇을 시작할까요?")
-    st.caption("필요한 작업을 선택해 이동하세요.")
+    st.markdown("""<div class="hero"><div class="eyebrow">EVENT ON · PLANNING WORKSPACE</div>
+    <h1>행사의 시작부터,<br>완성도 있는 운영까지.</h1>
+    <p>아이디어를 공간으로, 설계를 실행 계획으로.<br>행사 정보 입력부터 3D 배치와 운영 보고서까지 하나의 흐름으로 준비하세요.</p>
+    <div class="home-flow">01 행사 정보 입력 &nbsp; / &nbsp; 02 공간 설계 &nbsp; / &nbsp; 03 보고서 검토</div></div>""",unsafe_allow_html=True)
+    st.markdown("### 오늘의 행사를 설계하세요")
+    st.caption("설계를 시작하거나, 현재 설계 데이터를 바탕으로 보고서를 검토하세요.")
     a,b=st.columns(2,gap="large")
     with a:
-        st.markdown('<div class="feature-card"><div class="feature-icon">▦</div><h3>대시보드</h3><p>행사 설계 및 공간 분석을 위한 작업 공간입니다. 행사 정보 입력부터 3D 배치·분석까지 진행하세요.</p></div>',unsafe_allow_html=True)
-        if st.button("대시보드 열기  →",type="primary",use_container_width=True,key="home_dash"): go("대시보드"); st.rerun()
+        st.markdown('<div class="feature-card"><div class="feature-icon">▦</div><div class="card-kicker">DESIGN STUDIO</div><h3>대시보드</h3><p>행사 조건을 입력하고 시설을 배치하세요.<br>3D 공간과 분석 결과를 함께 확인할 수 있습니다.</p></div>',unsafe_allow_html=True)
+        if st.button("대시보드 열기 →",type="primary",use_container_width=True,key="home_dash"):
+            go("대시보드");st.rerun()
     with b:
-        st.markdown('<div class="feature-card"><div class="feature-icon">▤</div><h3>AI 보고서 다운로드</h3><p>행사 계획, 운영 전략, 위험 관리 및 권장 사항을 정리한 전문 보고서를 생성합니다.</p></div>',unsafe_allow_html=True)
-        if st.button("보고서 만들기  →",type="primary",use_container_width=True,key="home_report"): go("AI 보고서"); st.rerun()
+        st.markdown('<div class="feature-card"><div class="feature-icon">▤</div><div class="card-kicker">REPORT STUDIO</div><h3>AI 보고서</h3><p>현재 설계의 조건과 분석 내용을 검토하세요.<br>운영 보고서를 확인하고 다운로드할 수 있습니다.</p></div>',unsafe_allow_html=True)
+        if st.button("보고서 만들기 →",type="primary",use_container_width=True,key="home_report"):
+            go("AI 보고서");st.rerun()
+
 
 def render_dashboard():
     import dashboard
@@ -756,13 +759,13 @@ def render_settings():
         else:
             with st.form("password_change_form"):
                 current=st.text_input("현재 비밀번호",type="password")
-                new1=st.text_input("새 비밀번호 (8자 이상)",type="password")
+                new1=st.text_input("새 비밀번호 (4자 이상)",type="password")
                 new2=st.text_input("새 비밀번호 확인",type="password")
                 change=st.form_submit_button("비밀번호 변경",type="primary")
             if change:
                 user=authenticate(st.session_state.username,current) if current else None
                 if not user: st.error("현재 비밀번호가 올바르지 않습니다.")
-                elif len(new1)<8: st.error("새 비밀번호는 8자 이상이어야 합니다.")
+                elif len(new1)<4: st.error("새 비밀번호는 4자 이상이어야 합니다.")
                 elif new1!=new2: st.error("새 비밀번호가 서로 일치하지 않습니다.")
                 else:
                     salt,ph=hash_password(new1)
@@ -812,13 +815,13 @@ def render_auth():
             username=st.text_input("아이디")
             display=st.text_input("표시 이름")
             role=st.text_input("역할",placeholder="예: 기획자, 팀장, 디자이너, 외부 협력사")
-            pw1=st.text_input("비밀번호 (8자 이상)",type="password")
+            pw1=st.text_input("비밀번호 (4자 이상)",type="password")
             pw2=st.text_input("비밀번호 확인",type="password")
             submitted=st.form_submit_button("회원가입",type="primary",use_container_width=True)
         if submitted:
             if not username.strip() or not display.strip() or not role.strip() or not pw1: st.error("모든 항목을 입력해 주세요.")
             elif len(username.strip())<3: st.error("아이디는 3자 이상이어야 합니다.")
-            elif len(pw1)<8: st.error("비밀번호는 8자 이상이어야 합니다.")
+            elif len(pw1)<4: st.error("비밀번호는 4자 이상이어야 합니다.")
             elif pw1!=pw2: st.error("비밀번호가 일치하지 않습니다.")
             else:
                 ok,msg=create_user(username,display,role,pw1)
@@ -1034,6 +1037,8 @@ def render_report():
     except Exception:st.warning('PDF 생성 실패. Markdown을 이용하세요.')
     st.download_button('설계·분석 원본 JSON',json.dumps(snapshot,ensure_ascii=False,indent=2).encode(),file_name='Event_ON_design.json')
     with st.expander('기존 규칙형 기준 자료'):st.markdown(linked_report(snapshot))
+
+st.markdown('\n<style>\n[data-testid="stSidebar"]{background:#15253e!important;border-right:1px solid #263b59!important}\n[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p{color:#c3cfe0!important}\n[data-testid="stSidebar"] .brand-link{color:#ffffff!important;padding:12px 0 8px;font-size:30px;letter-spacing:-1.3px}\n[data-testid="stSidebar"] .brand-link span{color:#8eb5ff!important}\n[data-testid="stSidebar"] .brand-sub{color:#a9bbd4!important;font-size:10px;letter-spacing:1.7px}\n[data-testid="stSidebar"] .sidebar-label{color:#93aac9!important;letter-spacing:1.7px;font-size:10px;margin-top:28px;margin-bottom:10px}\n[data-testid="stSidebar"] div.stButton>button{background:#1d314e!important;border:1px solid #2d4464!important;color:#e1e9f7!important;border-radius:10px;min-height:46px;box-shadow:none!important;margin:3px 0}\n[data-testid="stSidebar"] div.stButton>button :is(p,span,div){color:#e1e9f7!important}\n[data-testid="stSidebar"] div.stButton>button:hover{background:#2b4466!important;border-color:#759bcb!important}\n[data-testid="stSidebar"] div.stButton>button[kind="primary"]{background:#dce9ff!important;border-color:#dce9ff!important;box-shadow:inset 4px 0 #477de1!important}\n[data-testid="stSidebar"] div.stButton>button[kind="primary"] :is(p,span,div){color:#173962!important}\n[data-testid="stSidebar"] .sidebar-user{background:#203650;border-color:#354d6b}\n[data-testid="stSidebar"] .sidebar-user-name{color:#fff!important}\n.hero{background:#edf3fb;border:1px solid #dce5f1;border-left:5px solid #4379d8;border-radius:20px;padding:clamp(24px,4vw,48px);box-shadow:none}\n.hero h1{font-size:clamp(30px,4vw,48px);letter-spacing:-1.8px;line-height:1.25;margin:18px 0;color:#152d4c}\n.hero p{font-size:15px;line-height:1.9;color:#536780}\n.eyebrow{font-size:11px;letter-spacing:1.8px;color:#3766ac}\n.home-flow{margin-top:28px;padding-top:18px;border-top:1px solid #d3dfee;color:#46648b;font-size:12px;line-height:2;overflow-wrap:anywhere}\n.feature-card{box-sizing:border-box;min-height:278px;padding:28px;border:1px solid #dce5f1;border-radius:18px;background:#fff;box-shadow:0 8px 24px #17365108;display:flex;flex-direction:column}\n.feature-icon{border-radius:12px;background:#edf3fb;color:#3767ad;width:44px;height:44px;margin-bottom:16px}\n.card-kicker{font-size:10px;letter-spacing:1.5px;color:#647e9e;margin-bottom:8px;font-weight:700}\n.feature-card h3{font-size:23px;letter-spacing:-.7px;margin-bottom:12px}\n.feature-card p{font-size:14px;line-height:1.8;color:#61738a;margin:0}\n@media(max-width:640px){.feature-card{min-height:250px;padding:22px}.hero h1{letter-spacing:-1px}.home-flow{font-size:11px}}\n</style>\n', unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
