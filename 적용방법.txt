@@ -1,1 +1,1 @@
-app.py와 dashboard.b64를 함께 교체하세요. home_assets.json과 event_on.db는 유지하세요.
+app.py와 dashboard.b64를 함께 교체하세요. home_assets.json 및 event_on.db는 유지하세요. 홈 화면은 유지하고 설정·보고서·대시보드 UI 강조색을 청록색으로 통일합니다. 위험·경고·성공 상태 및 3D 시설/혼잡도 범례 색상은 의미 보존을 위해 유지했습니다.

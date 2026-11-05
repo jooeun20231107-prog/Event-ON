@@ -607,7 +607,7 @@ def render_settings():
     st.markdown('<div class="eyebrow">PREFERENCES</div>',unsafe_allow_html=True)
     st.title("설정")
     settings=get_settings(st.session_state.user_id)
-    tabs=st.tabs(["계정 및 프로필","보고서 설정","화면 설정","AI 분석 설정","프로젝트 및 저장 관리","보안 및 계정 관리"])
+    tabs=st.tabs(["계정 및 프로필","보고서 설정","화면 설정","AI 분석 설정","프로젝트 및 저장 관리","대시보드 조작 설명","보안 및 계정 관리"])
 
     with tabs[0]:
         st.subheader("계정 및 프로필")
@@ -687,6 +687,9 @@ def render_settings():
                 st.caption("아직 저장된 프로젝트가 없습니다. 보고서를 생성하면 프로젝트가 자동 저장됩니다.")
 
     with tabs[5]:
+        render_dashboard_controls_settings()
+
+    with tabs[6]:
         st.subheader("보안 및 계정 관리")
         if not st.session_state.logged_in:
             st.info("비밀번호 변경 및 계정 삭제는 로그인 후 이용할 수 있습니다.")
@@ -886,12 +889,9 @@ def report_settings_form():
 
 def render_settings():
     _previous_render_settings()
-    st.divider()
-    with st.container(border=True, key="dedicated_dashboard_controls"):
-        render_dashboard_controls_settings()
 
 def render_dashboard_controls_settings():
-    st.subheader("대시보드 조작 설정")
+    st.subheader("대시보드 조작 설명")
     prefs=st.session_state.get('dashboard_controls',{'deviceMode':'laptop','dragMode':'rotate'})
     mode=st.radio('기기 모드',['노트북','태블릿·펜'],index=0 if prefs.get('deviceMode')=='laptop' else 1,horizontal=True,key='dashboard_device_setting')
     drag=st.radio('마우스 드래그 동작',['회전','이동'],index=0 if prefs.get('dragMode')=='rotate' else 1,horizontal=True,key='dashboard_drag_setting')
@@ -1485,6 +1485,14 @@ def dashboard_report_draft(snapshot, selected):
     titles=re.findall(r'^## (\d+\. .+)$',text,re.M)
     text=re.sub(r'(## 목차\n).*?(?=\n## \d+\.)',lambda _: '## 목차\n'+'\n'.join(title+'  ' for title in titles)+'\n',text,flags=re.S)
     return text
+
+
+_brand_consistent_css = build_all_css
+def build_all_css(page):
+    css = _brand_consistent_css(page)
+    if page != "홈":
+        css += '<style>\n:root{--eo-brand:#277986;--eo-brand-dark:#1c606b;--eo-bg:#f4f7f7;--eo-text:#193e43;--eo-line:#d6e5e6}\n.stApp{background:var(--eo-bg)!important;color:var(--eo-text)!important}\n[data-testid="stMain"] h1,[data-testid="stMain"] h2,[data-testid="stMain"] h3{color:#193e43!important}\n[data-testid="stMain"] button[kind="primary"],[data-testid="stFormSubmitButton"] button{background:#277986!important;border-color:#277986!important;color:#fff!important}\n[data-testid="stMain"] button[kind="primary"] p,[data-testid="stFormSubmitButton"] button p{color:white!important}\n[data-baseweb="tab-highlight"]{background:#277986!important}[data-baseweb="tab"][aria-selected="true"]{color:#277986!important}\n[data-testid="stMain"] [data-testid="stForm"],[data-testid="stMain"] [data-testid="stExpander"],[data-testid="stMain"] [data-testid="stMetric"]{border-color:#d6e5e6!important;background:#fff!important}\n[data-baseweb="input"]:focus-within,[data-baseweb="select"]:focus-within{border-color:#277986!important}\ninput[type="radio"],input[type="checkbox"],input[type="range"]{accent-color:#277986!important}\n[data-testid="stMain"] a{color:#277986}\n</style>'
+    return css
 
 if __name__ == '__main__':
     main()
