@@ -229,7 +229,7 @@ def save_project(user_id, name, payload):
         conn.commit()
 
 init_db()
-for k, v in {"page":"홈","logged_in":False,"user_id":None,"username":"","display_name":"","role":""}.items():
+for k, v in {"page":"홈","logged_in":False,"user_id":None,"username":"","display_name":"","role":"","auth_open":False}.items():
     if k not in st.session_state: st.session_state[k] = v
 if "report_data" not in st.session_state: st.session_state.report_data = {}
 
@@ -731,12 +731,23 @@ def main():
         
         if a.button('Event ON',key='brand_home',use_container_width=False):go('홈');st.rerun()
         for col,label,route in [(b,'홈','홈'),(c,'대시보드','대시보드'),(d,'보고서','보고서'),(e,'설정','설정'),(f,'내 계정' if st.session_state.get('logged_in') else '로그인 / 가입','설정' if st.session_state.get('logged_in') else '로그인')]:
-            if col.button(label,key='clean_nav_'+route+'_'+label,use_container_width=True):go(route);st.rerun()
+            if col.button(label,key='clean_nav_'+route+'_'+label,use_container_width=True):
+                if route == '로그인':
+                    # 로그인 버튼은 페이지 이동 대신 홈 위에 패널을 표시
+                    st.session_state.page = '홈'
+                    st.session_state.auth_open = True
+                else:
+                    if route == '홈': st.session_state.auth_open = False
+                    go(route)
+                st.rerun()
         if _in:
             if _cols[6].button('로그아웃',key='clean_logout',use_container_width=True):
                 for k,v in {'logged_in':False,'user_id':None,'username':'','display_name':'','role':'','page':'홈'}.items():st.session_state[k]=v
                 st.rerun()
-    if page=='홈':render_home()
+    if page=='홈':
+        render_home()
+        if st.session_state.get('auth_open', False) and not st.session_state.get('logged_in', False):
+            render_auth()
     elif page=='대시보드':
         render_dashboard()
     elif page=='보고서':render_report()
@@ -780,9 +791,12 @@ def _render_auth_modal():
                 (st.success if ok else st.error)(msg)
 
 def render_auth():
-    # 홈 화면을 먼저 그대로 렌더링하고, 로그인 패널은 홈 위에 고정 오버레이로 띄웁니다.
-    render_home()
+    # 홈은 main에서 한 번만 렌더링하고, 이 함수는 로그인 오버레이만 표시합니다.
     with st.container(key="auth_overlay"):
+        close_col, _spacer = st.columns([1, 5])
+        if close_col.button("✕ 닫기", key="close_auth_overlay"):
+            st.session_state.auth_open = False
+            st.rerun()
         st.markdown(
             '<div class="auth-panel-head"><div class="auth-eyebrow">WELCOME TO EVENT ON</div>'
             '<h2>다시 만나서 반가워요</h2><p>로그인하고 행사 설계를 이어가세요.</p></div>',
@@ -803,6 +817,7 @@ def render_auth():
                     st.session_state.display_name = user["display_name"]
                     st.session_state.role = user["role"]
                     st.session_state.page = "홈"
+                    st.session_state.auth_open = False
                     st.success("로그인했어요.")
                     st.rerun()
                 else:
@@ -1619,6 +1634,9 @@ input[type="radio"],input[type="checkbox"],input[type="range"] { accent-color:va
   backdrop-filter:blur(12px);
 }
 .stApp .st-key-auth_overlay [data-testid="stTabs"] { margin-top:.3rem!important; }
+.stApp .st-key-auth_overlay button[kind="secondary"] { background:#edfafa!important; border:1px solid #b9e0e1!important; color:#176d72!important; padding:.2rem .6rem!important; min-height:2rem!important; }
+.stApp .st-key-auth_overlay button[kind="secondary"] p { color:#176d72!important; font-size:.78rem!important; }
+
 .stApp .st-key-auth_overlay [data-testid="stForm"] { padding:.65rem 0!important; border:0!important; background:transparent!important; }
 .stApp .st-key-auth_overlay h2 { color:#173f43!important; }
 .stApp .st-key-auth_overlay p,.stApp .st-key-auth_overlay label { color:#42666a!important; }
