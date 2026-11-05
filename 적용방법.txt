@@ -1,1 +1,1 @@
-app.py와 dashboard.b64를 모두 교체하세요. home_assets.json과 event_on.db는 유지하세요. 대시보드 폼 안에서 마우스 휠로 아래로 내려갑니다. 상단 메뉴는 청록 배경/흰 글씨로 변경했습니다.
+app.py와 dashboard.b64 두 파일 모두 교체해야 합니다. 이번 버전은 단계별 숨김을 제거해 전체 입력 항목과 설계 생성 버튼을 한 페이지에 표시합니다. 기존 home_assets.json 및 event_on.db는 유지하세요.
