@@ -1,1 +1,1 @@
-app.py와 dashboard.b64를 함께 교체하세요. 현재 home_assets.json과 event_on.db는 그대로 유지하세요. 새 입력 화면은 네 영역을 세로로 이어 표시하며 마지막 실행 버튼으로 기존 3D 생성 함수를 호출합니다.
+app.py와 dashboard.b64를 함께 교체하세요. 대시보드 상단 메뉴줄 제거, 화면 너비 전체 사용, 입력창 내부 세로 스크롤 적용. home_assets.json과 event_on.db는 그대로 유지하세요.

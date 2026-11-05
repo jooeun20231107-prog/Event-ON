@@ -1344,5 +1344,13 @@ def build_all_css(page):
         css += '<style>html body .stApp [data-testid="stMain"] iframe{height:auto!important;min-height:900px!important;max-height:none!important}html body .stApp [data-testid="stMain"]{height:100dvh!important;overflow-y:auto!important}html body .stApp .block-container,html body .stApp [data-testid="stMainBlockContainer"],html body .stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:auto!important;max-height:none!important;overflow:visible!important}.st-key-clean_nav{background:#277986!important}.st-key-clean_nav button p{color:white!important}</style>'
     return css
 
+
+_fullwidth_input_css = build_all_css
+def build_all_css(page):
+    css = _fullwidth_input_css(page)
+    if page == '대시보드':
+        css += '<style>html body .stApp .st-key-clean_nav{display:none!important}html body .stApp [data-testid="stMainBlockContainer"],html body .stApp .block-container{padding:0!important;margin:0!important;width:100%!important;max-width:none!important;height:auto!important}html body .stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{gap:0!important}html body .stApp [data-testid="stMain"] iframe{width:100%!important;height:calc(100dvh - 8px)!important;min-height:500px!important;max-height:none!important;border:0!important;border-radius:0!important}html body .stApp [data-testid="stMain"]{padding:0!important;height:100dvh!important;overflow-y:auto!important}</style>'
+    return css
+
 if __name__ == '__main__':
     main()
