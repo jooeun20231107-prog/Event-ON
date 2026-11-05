@@ -1494,5 +1494,12 @@ def build_all_css(page):
         css += '<style>\n:root{--eo-brand:#277986;--eo-brand-dark:#1c606b;--eo-bg:#f4f7f7;--eo-text:#193e43;--eo-line:#d6e5e6}\n.stApp{background:var(--eo-bg)!important;color:var(--eo-text)!important}\n[data-testid="stMain"] h1,[data-testid="stMain"] h2,[data-testid="stMain"] h3{color:#193e43!important}\n[data-testid="stMain"] button[kind="primary"],[data-testid="stFormSubmitButton"] button{background:#277986!important;border-color:#277986!important;color:#fff!important}\n[data-testid="stMain"] button[kind="primary"] p,[data-testid="stFormSubmitButton"] button p{color:white!important}\n[data-baseweb="tab-highlight"]{background:#277986!important}[data-baseweb="tab"][aria-selected="true"]{color:#277986!important}\n[data-testid="stMain"] [data-testid="stForm"],[data-testid="stMain"] [data-testid="stExpander"],[data-testid="stMain"] [data-testid="stMetric"]{border-color:#d6e5e6!important;background:#fff!important}\n[data-baseweb="input"]:focus-within,[data-baseweb="select"]:focus-within{border-color:#277986!important}\ninput[type="radio"],input[type="checkbox"],input[type="range"]{accent-color:#277986!important}\n[data-testid="stMain"] a{color:#277986}\n</style>'
     return css
 
+
+_auth_right_build_css = build_all_css
+def build_all_css(page):
+    css = _auth_right_build_css(page)
+    css += '<style>@media(min-width:701px){[data-testid="stDialog"] [role="dialog"]{position:fixed!important;left:auto!important;right:28px!important;top:88px!important;bottom:auto!important;margin:0!important;transform:none!important;width:460px!important;max-width:calc(100vw - 56px)!important;max-height:calc(100dvh - 112px)!important;overflow-y:auto!important}}</style>'
+    return css
+
 if __name__ == '__main__':
     main()
