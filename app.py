@@ -1283,5 +1283,25 @@ def build_all_css(page):
     css += '<style>.stApp .st-key-clean_home{position:relative!important;inset:auto!important;min-height:0!important;height:auto!important;aspect-ratio:16/9!important;background-size:100% 100%!important;background-position:center top!important}.stApp .st-key-clean_home:hover{background-image:linear-gradient(90deg,#07131e85,#07131e15),url(data:image/jpeg;base64,'+CLEAN_SLIDE_TWO+')!important}.stApp .clean-copy{top:24%!important}.stApp .st-key-clean_start{top:65%!important}.stApp [data-testid="stMain"]{overflow-y:auto!important;height:100dvh!important}.stApp .block-container{height:auto!important;max-height:none!important;overflow:visible!important}.st-key-clean_controls{display:none!important}</style>'
     return css
 
+
+_dashboard_only_css = build_all_css
+def build_all_css(page):
+    if page != '대시보드':
+        return _dashboard_only_css(page)
+    return '<style>\nheader[data-testid="stHeader"],[data-testid="stSidebar"],[data-testid="stSidebarCollapsedControl"]{display:none!important}\n.st-key-clean_nav{position:relative!important;inset:auto!important;background:white!important;padding:12px!important;z-index:10!important}\n.st-key-clean_nav button p{color:#193a40!important}\nhtml,body,.stApp,[data-testid="stAppViewContainer"]{height:100%!important;max-height:none!important}\n[data-testid="stMain"]{height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;max-height:none!important}\n.stApp [data-testid="stMainBlockContainer"],.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]>[data-testid="stVerticalBlock"]{height:auto!important;max-height:none!important;overflow:visible!important;min-height:0!important;padding-top:12px!important}\n.stApp [data-testid="stMain"] iframe{height:900px!important;min-height:900px!important;max-height:none!important;width:100%!important}\n</style>'
+
+
+_home_timed_css = build_all_css
+def build_all_css(page):
+    css = _home_timed_css(page)
+    if page != '홈':
+        return css
+    one = 'linear-gradient(90deg,#07131e85,#07131e15),url(data:image/jpeg;base64,' + CLEAN_SLIDE_ONE + ')'
+    two = 'linear-gradient(90deg,#07131e85,#07131e15),url(data:image/jpeg;base64,' + CLEAN_SLIDE_TWO + ')'
+    css += '<style>@keyframes eventon-original-home-cycle{0%,49.999%{background-image:'+one+'}50%,100%{background-image:'+two+'}}html body .stApp .st-key-clean_home,html body .stApp .st-key-clean_home:hover{background-image:'+one+'!important;animation:eventon-original-home-cycle 20s steps(1,end) infinite!important;background-position:center top!important;background-size:100% 100%!important}.st-key-clean_controls{display:none!important}</style>'
+    # Important background-image would override the animation: replace image with two opacity layers instead.
+    css += '<style>html body .stApp .st-key-clean_home{isolation:isolate!important}html body .stApp .st-key-clean_home:before{content:"";position:absolute;inset:0;z-index:-1;background:'+two+' center top/100% 100% no-repeat;opacity:0;animation:eventon-home-layer 20s steps(1,end) infinite}@keyframes eventon-home-layer{0%,49.999%{opacity:0}50%,100%{opacity:1}}html body .stApp .st-key-clean_home,html body .stApp .st-key-clean_home:hover{animation:none!important;background-image:'+one+'!important}</style>'
+    return css
+
 if __name__ == '__main__':
     main()
